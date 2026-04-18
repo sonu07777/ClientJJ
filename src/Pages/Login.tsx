@@ -1,33 +1,58 @@
 import React, { useState } from "react";
+import type {AppDispatch}  from "../Redux/Store";
+import { useDispatch } from "react-redux";
+import { login } from "../Redux/Slice/AuthSlice";
+import { useNavigate } from "react-router-dom";
 
-function Login() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+function Login() {  
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const [loginData , setLoginData] = useState<any>({
+    email:"",
+    password:""
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  function handelUserInput(event: React.ChangeEvent<HTMLInputElement>) {
+    const {name , value } = event.target;
+    setLoginData({
+      ...loginData,
+      [name]: value
+    });
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const response = await dispatch(login(loginData));
 
-    const data = {
-      email,
-      password,
-    };
-
-    console.log("Login Data:", data);
+    console.log("Login response:", response);
+    if(response?.payload?.success){
+      navigate("/home");
+      alert("Login successful");
+      
+    }else{  
+      alert("Login failed");
+    }
+    // console.log("Login data submitted:", response);
+    setLoginData({
+      email:"",
+      password:""
+    });
   };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100  min-w-screen">
       <div className="bg-white shadow-lg rounded-xl p-8 w-[350px]">
         <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form noValidate onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block mb-1 text-sm font-medium">Email</label>
             <input
               type="email"
+              name="email"
               placeholder="Enter your email"
               className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={loginData.email}
+              onChange={handelUserInput}
               required
             />
           </div>
@@ -36,10 +61,11 @@ function Login() {
             <label className="block mb-1 text-sm font-medium">Password</label>
             <input
               type="password"
+              name="password"
               placeholder="Enter your password"
               className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={loginData.password}
+              onChange={handelUserInput}
               required
             />
           </div>

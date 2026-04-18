@@ -5,7 +5,7 @@ import { AboutSection } from "./components/AboutSection";
 import { EmployeeSection } from "./components/Employee/EmployeeSection";
 // import { SideBarMainLayout } from "./Layout/SideBarMainLayout";
 import { Route, Routes } from "react-router-dom";
-import Login from "./components/Login";
+import Login from "./Pages/Login";
 import AccessDenied from "./components/AccessDenied";
 import RequreAuth from "./Authentication /RequreAuth";
 // import Home from "./Pages/Home";
