@@ -11,9 +11,11 @@ interface CustomerTableProps {
   customers: Customer[];
   onEdit: (customer: Customer) => void;
   onDelete: (id: string) => void;
+  onAddProduct?: (customerId: string, product: Omit<Product, 'id' | 'purchaseDate'>) => void;
+  onDeleteProduct?: (customerId: string, productId: string) => void;
 }
 
-export function CustomerTable({ customers, onEdit, onDelete }: CustomerTableProps) {
+export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDeleteProduct }: CustomerTableProps) {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [addingProductFor, setAddingProductFor] = useState<Customer | null>(null);
 
@@ -22,22 +24,10 @@ export function CustomerTable({ customers, onEdit, onDelete }: CustomerTableProp
     setEditingCustomer(null);
   };
 
-  const handleAddProduct = (customerId: string, product: Omit<Product, 'id'>) => {
-    const customer = customers.find(c => c.id === customerId);
-    if (!customer) return;
-
-    const newProduct: Product = {
-      ...product,
-      id: `p${Date.now()}`
-    };
-
-    const updatedCustomer: Customer = {
-      ...customer,
-      products: [...customer.products, newProduct],
-      totalSpent: customer.totalSpent + product.paid
-    };
-
-    onEdit(updatedCustomer);
+  const handleAddProduct = (customerId: string, product: Omit<Product, 'id' | 'purchaseDate'>) => {
+    if (onAddProduct) {
+      onAddProduct(customerId, product);
+    }
     setAddingProductFor(null);
   };
 
@@ -203,7 +193,7 @@ export function CustomerTable({ customers, onEdit, onDelete }: CustomerTableProp
                     Add Product
                   </Button>
                 </div>
-                <ProductsList products={record.products} />
+                <ProductsList products={record.products} onDelete={onDeleteProduct ? (productId) => onDeleteProduct(record.id, productId) : undefined} />
               </div>
             ),
             rowExpandable: () => true,

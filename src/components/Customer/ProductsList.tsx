@@ -4,11 +4,14 @@ import dayjs from 'dayjs';
 
 const { Text } = Typography;
 
+import { DeleteOutlined } from '@ant-design/icons';
+
 interface ProductsListProps {
   products: Product[];
+  onDelete?: (productId: string) => void;
 }
 
-export function ProductsList({ products }: ProductsListProps) {
+export function ProductsList({ products, onDelete }: ProductsListProps) {
   if (products.length === 0) {
     return (
       <div className="text-sm text-gray-500 italic py-2">No products purchased yet</div>
@@ -46,6 +49,19 @@ export function ProductsList({ products }: ProductsListProps) {
       key: 'pending',
       render: (val: number) => val > 0 ? <Text type="danger" strong>₹{val.toLocaleString('en-IN')}</Text> : '-',
     },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_: any, record: Product) => (
+        onDelete ? (
+          <DeleteOutlined
+            className="text-red-500 cursor-pointer hover:text-red-700"
+            onClick={() => onDelete(record.id)}
+            title="Remove Product"
+          />
+        ) : null
+      )
+    }
   ];
 
   return (

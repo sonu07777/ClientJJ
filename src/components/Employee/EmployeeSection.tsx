@@ -1,101 +1,51 @@
-import { useState } from 'react';
-import { Table, Input, Select, Tag, Button, Space } from 'antd';
+import { useState, useEffect } from 'react';
+import { Table, Input, Select, Tag, Button, Space, Popconfirm } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined, MailOutlined, PhoneOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { SideBarMainLayout } from '../../Layout/SideBarMainLayout';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../../Redux/Store';
+import { getAllEmployees, deleteEmployee, addEmployee, updateEmployee } from '../../Redux/Slice/EmployeeSlice';
+import type { Employee } from '../../App';
+import { PlusOutlined } from '@ant-design/icons';
+import { AddEmployeeModal } from './AddEmployeeModal';
+import { EditEmployeeModal } from './EditEmployeeModal';
 
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  department: string;
-  position: string;
-  location: string;
-  joinDate: string;
-  status: 'active' | 'on-leave' | 'inactive';
-}
 
-const initialEmployees: Employee[] = [
-  {
-    id: '1',
-    name: 'Rajesh Kumar',
-    email: 'rajesh.k@company.com',
-    phone: '+91 98765 11111',
-    department: 'Engineering',
-    position: 'Senior Developer',
-    location: 'Bangalore',
-    joinDate: '2022-01-15',
-    status: 'active'
-  },
-  {
-    id: '2',
-    name: 'Priya Sharma',
-    email: 'priya.s@company.com',
-    phone: '+91 98765 22222',
-    department: 'Sales',
-    position: 'Sales Manager',
-    location: 'Mumbai',
-    joinDate: '2021-06-20',
-    status: 'active'
-  },
-  {
-    id: '3',
-    name: 'Amit Patel',
-    email: 'amit.p@company.com',
-    phone: '+91 98765 33333',
-    department: 'Marketing',
-    position: 'Marketing Lead',
-    location: 'Delhi',
-    joinDate: '2023-03-10',
-    status: 'active'
-  },
-  {
-    id: '4',
-    name: 'Sneha Reddy',
-    email: 'sneha.r@company.com',
-    phone: '+91 98765 44444',
-    department: 'HR',
-    position: 'HR Manager',
-    location: 'Hyderabad',
-    joinDate: '2020-11-05',
-    status: 'on-leave'
-  },
-  {
-    id: '5',
-    name: 'Vikram Singh',
-    email: 'vikram.s@company.com',
-    phone: '+91 98765 55555',
-    department: 'Engineering',
-    position: 'DevOps Engineer',
-    location: 'Pune',
-    joinDate: '2022-08-12',
-    status: 'active'
-  },
-  {
-    id: '6',
-    name: 'Ananya Iyer',
-    email: 'ananya.i@company.com',
-    phone: '+91 98765 66666',
-    department: 'Finance',
-    position: 'Finance Analyst',
-    location: 'Chennai',
-    joinDate: '2023-02-28',
-    status: 'active'
-  }
-];
 
 export function EmployeeSection() {
-  const [employees] = useState<Employee[]>(initialEmployees);
+  const dispatch = useDispatch<AppDispatch>();
+  const { employees, loading } = useSelector((state: RootState) => state.employees);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+
+  useEffect(() => {
+    dispatch(getAllEmployees());
+  }, [dispatch]);
+
+  const handleDelete = (id: string) => {
+    dispatch(deleteEmployee(id));
+  };
+
+  const handleAdd = (employee: Omit<Employee, 'id' | 'joinDate'>) => {
+    dispatch(addEmployee(employee));
+    setIsAddModalOpen(false);
+  };
+
+  const handleEdit = (employee: Employee) => {
+    dispatch(updateEmployee({ id: employee.id, data: employee }));
+    setEditingEmployee(null);
+  };
 
   const departments = ['all', ...Array.from(new Set(employees.map(e => e.department)))];
 
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      employee.position.toLowerCase().includes(searchQuery.toLowerCase());
+      employee.role.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
     
@@ -132,7 +82,7 @@ export function EmployeeSection() {
       render: (_: any, record: Employee) => (
         <div>
           <div className="font-medium text-gray-900">{record.name}</div>
-          <div className="text-sm text-gray-500">{record.position}</div>
+          <div className="text-sm text-gray-500">{record.role}</div>
         </div>
       ),
     },
@@ -157,16 +107,7 @@ export function EmployeeSection() {
       dataIndex: 'department',
       key: 'department',
     },
-    {
-      title: 'Location',
-      key: 'location',
-      render: (_: any, record: Employee) => (
-        <div className="flex items-center gap-2 text-sm text-gray-900">
-          <EnvironmentOutlined className="text-gray-400" />
-          {record.location}
-        </div>
-      ),
-    },
+
     {
       title: 'Status',
       dataIndex: 'status',
@@ -191,19 +132,28 @@ export function EmployeeSection() {
     {
       title: 'Actions',
       key: 'actions',
-      render: () => (
+      render: (_: any, record: Employee) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
             type="primary"
             ghost
             shape="circle"
+            onClick={() => setEditingEmployee(record)}
           />
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            shape="circle"
-          />
+          <Popconfirm
+            title="Delete Employee"
+            description="Are you sure you want to delete this employee?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              shape="circle"
+            />
+          </Popconfirm>
         </Space>
       ),
     },
@@ -259,6 +209,15 @@ export function EmployeeSection() {
                 </Select.Option>
               ))}
             </Select>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsAddModalOpen(true)}
+              size="large"
+              className="bg-blue-600 ml-4"
+            >
+              Add Employee
+            </Button>
           </div>
         </div>
       </div>
@@ -270,8 +229,24 @@ export function EmployeeSection() {
           dataSource={filteredEmployees}
           rowKey="id"
           pagination={{ pageSize: 10 }}
+          loading={loading}
         />
       </div>
+
+      {isAddModalOpen && (
+        <AddEmployeeModal
+          onClose={() => setIsAddModalOpen(false)}
+          onAdd={handleAdd}
+        />
+      )}
+
+      {editingEmployee && (
+        <EditEmployeeModal
+          employee={editingEmployee}
+          onClose={() => setEditingEmployee(null)}
+          onSave={handleEdit}
+        />
+      )}
     </SideBarMainLayout>
     // </div>
   );

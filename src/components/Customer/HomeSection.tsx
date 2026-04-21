@@ -1,44 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input, Button, DatePicker } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { CustomerTable } from "./CustomerTable";
 import { CustomerStats } from "./CustomerStats";
 import { AddCustomerModal } from "./AddCustomerModal";
-import type { Customer } from "../../App";
+import type { Customer, Product } from "../../App";
 import dayjs from "dayjs";
 import { SideBarMainLayout } from "../../Layout/SideBarMainLayout";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../Redux/Store";
+import { getAllCustomers, addCustomer, updateCustomer, deleteCustomer, addProduct, removeProduct } from "../../Redux/Slice/CustomerSlice";
 
 const { RangePicker } = DatePicker;
 
 interface HomeSectionProps {
-  initialCustomers: Customer[];
+  initialCustomers?: Customer[]; // Kept for layout compatibility but unused
 }
 
 export function HomeSection({ initialCustomers }: HomeSectionProps) {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const dispatch = useDispatch<AppDispatch>();
+  const { customers } = useSelector((state: RootState) => state.customers);
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateFilter, setDateFilter] = useState<
-    [dayjs.Dayjs | null, dayjs.Dayjs | null]
-  >([null, null]);
+  const [dateFilter, setDateFilter] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
 
-  const handleAddCustomer = (customer: Omit<Customer, "id">) => {
-    const newCustomer: Customer = {
-      ...customer,
-      id: Date.now().toString(),
-    };
-    setCustomers([newCustomer, ...customers]);
+  useEffect(() => {
+    dispatch(getAllCustomers());
+  }, [dispatch]);
+
+  const handleAddCustomer = (customer: Omit<Customer, "id" | "joinDate" | "totalSpent" | "products">) => {
+    dispatch(addCustomer(customer));
     setIsAddModalOpen(false);
   };
 
   const handleEditCustomer = (updatedCustomer: Customer) => {
-    setCustomers(
-      customers.map((c) => (c.id === updatedCustomer.id ? updatedCustomer : c)),
-    );
+    dispatch(updateCustomer({ id: updatedCustomer.id, data: updatedCustomer }));
   };
 
   const handleDeleteCustomer = (id: string) => {
-    setCustomers(customers.filter((c) => c.id !== id));
+    dispatch(deleteCustomer(id));
+  };
+
+  const handleAddProductToCustomer = (customerId: string, product: Omit<Product, "id" | "purchaseDate">) => {
+    dispatch(addProduct({ id: customerId, productData: product }));
+  };
+
+  const handleDeleteProductFromCustomer = (customerId: string, productId: string) => {
+    dispatch(removeProduct({ id: customerId, productId }));
   };
 
   const filteredCustomers = customers.filter((customer) => {
@@ -50,24 +59,17 @@ export function HomeSection({ initialCustomers }: HomeSectionProps) {
     let matchesDate = true;
     if (dateFilter && (dateFilter[0] || dateFilter[1])) {
       const customerDate = dayjs(customer.joinDate);
-
       const startDate = dateFilter[0];
       const endDate = dateFilter[1];
 
       if (startDate && endDate) {
         matchesDate =
-          (customerDate.isAfter(startDate, "day") ||
-            customerDate.isSame(startDate, "day")) &&
-          (customerDate.isBefore(endDate, "day") ||
-            customerDate.isSame(endDate, "day"));
+          (customerDate.isAfter(startDate, "day") || customerDate.isSame(startDate, "day")) &&
+          (customerDate.isBefore(endDate, "day") || customerDate.isSame(endDate, "day"));
       } else if (startDate) {
-        matchesDate =
-          customerDate.isAfter(startDate, "day") ||
-          customerDate.isSame(startDate, "day");
+        matchesDate = customerDate.isAfter(startDate, "day") || customerDate.isSame(startDate, "day");
       } else if (endDate) {
-        matchesDate =
-          customerDate.isBefore(endDate, "day") ||
-          customerDate.isSame(endDate, "day");
+        matchesDate = customerDate.isBefore(endDate, "day") || customerDate.isSame(endDate, "day");
       }
     }
 
@@ -132,13 +134,15 @@ export function HomeSection({ initialCustomers }: HomeSectionProps) {
         customers={filteredCustomers}
         onEdit={handleEditCustomer}
         onDelete={handleDeleteCustomer}
+        onAddProduct={handleAddProductToCustomer}
+        onDeleteProduct={handleDeleteProductFromCustomer}
       />
 
       {/* Add Customer Modal */}
       {isAddModalOpen && (
         <AddCustomerModal
           onClose={() => setIsAddModalOpen(false)}
-          onAdd={handleAddCustomer}
+          onAdd={handleAddCustomer as any}
         />
       )}
     </SideBarMainLayout>

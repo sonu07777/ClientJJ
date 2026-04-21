@@ -31,6 +31,18 @@ export interface Customer {
   products: Product[];
 }
 
+export interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  department: string;
+  role: string;
+  salary: number;
+  joinDate: string;
+  status: 'active' | 'on-leave' | 'inactive';
+}
+
 // Mock data
 const initialCustomers: Customer[] = [
   {
