@@ -6,7 +6,9 @@ import { EditCustomerModal } from './EditCustomerModal';
 import { AddProductModal } from './AddProductModal';
 import { ProductsList } from './ProductsList';
 import UploadeButton from '../UploadeButton';
-import Authaxios from '../../AxiosInstance/Authaxios';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../../Redux/Store';
+import { sendWhatsAppBill } from '../../Redux/Slice/CustomerSlice';
 
 
 interface CustomerTableProps {
@@ -18,9 +20,10 @@ interface CustomerTableProps {
 }
 
 export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDeleteProduct }: CustomerTableProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const whatsAppBills = useSelector((state: RootState) => state.customers.whatsAppBills);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [addingProductFor, setAddingProductFor] = useState<Customer | null>(null);
-  const [sendingWhatsAppFor, setSendingWhatsAppFor] = useState<string | null>(null);
 
   const handleEdit = (customer: Customer) => {
     onEdit(customer);
@@ -63,17 +66,15 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
     }
 
     try {
-      setSendingWhatsAppFor(customer.id);
-      await Authaxios.post('api/whatsapp/send-bill-image', {
+      await dispatch(sendWhatsAppBill({
+        customerId: customer.id,
         phoneNumber: customer.phone,
         imageUrl: latestBillUrl,
         caption,
-      });
+      })).unwrap();
       antdMessage.success('Bill image sent on WhatsApp');
     } catch (error: any) {
-      antdMessage.error(error.response?.data?.message || error.response?.data || 'Failed to send WhatsApp bill');
-    } finally {
-      setSendingWhatsAppFor(null);
+      antdMessage.error(error || 'Failed to send WhatsApp bill');
     }
   };
 
@@ -108,7 +109,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
             type="link"
             icon={<WhatsAppOutlined />}
             onClick={() => sendWhatsAppMessage(record)}
-            loading={sendingWhatsAppFor === record.id}
+            loading={whatsAppBills[record.id]?.loading}
             className="p-0 h-auto text-green-600 hover:text-green-700"
           >
             Send WhatsApp

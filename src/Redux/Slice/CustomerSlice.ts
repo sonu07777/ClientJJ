@@ -6,6 +6,13 @@ interface CustomerState {
   customers: Customer[];
   loading: boolean;
   error: string | null;
+  whatsAppBills: Record<
+    string,
+    {
+      loading: boolean;
+      error: string | null;
+    }
+  >;
   billUploads: Record<
     string,
     {
@@ -16,9 +23,18 @@ interface CustomerState {
   >;
 }
 
+interface SendBillImageRequest {
+  customerId: string;
+  phoneNumber: string;
+  imageUrl: string;
+  caption: string;
+}
+
 const normalizeBillUrls = (billUrls: unknown): string[] => {
   if (Array.isArray(billUrls)) {
-    return billUrls.filter((url): url is string => typeof url === "string" && url.length > 0);
+    return billUrls.filter(
+      (url): url is string => typeof url === "string" && url.length > 0,
+    );
   }
 
   if (typeof billUrls === "string" && billUrls.length > 0) {
@@ -30,14 +46,18 @@ const normalizeBillUrls = (billUrls: unknown): string[] => {
 
 const getCustomerBillImages = (customer: Customer): string[] => {
   const customerBillUrls = normalizeBillUrls(customer.billUrls);
-  const productBillUrls = customer.products.flatMap((product) => normalizeBillUrls(product.billUrls));
+  const productBillUrls = customer.products.flatMap((product) =>
+    normalizeBillUrls(product.billUrls),
+  );
 
-  return Array.from(new Set([...customerBillUrls, ...productBillUrls])).reverse();
+  return Array.from(
+    new Set([...customerBillUrls, ...productBillUrls]),
+  ).reverse();
 };
 
 const createBillUploadsFromCustomers = (
   customers: Customer[],
-  existingBillUploads: CustomerState["billUploads"]
+  existingBillUploads: CustomerState["billUploads"],
 ) => {
   return customers.reduce<CustomerState["billUploads"]>((uploads, customer) => {
     const existingUpload = existingBillUploads[customer.id];
@@ -56,6 +76,7 @@ const initialState: CustomerState = {
   customers: [],
   loading: false,
   error: null,
+  whatsAppBills: {},
   billUploads: {},
 };
 
@@ -67,35 +88,47 @@ export const getAllCustomers = createAsyncThunk(
       const response = await Authaxios.get("api/customers");
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch customers");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch customers",
+      );
     }
-  }
+  },
 );
 
 // ── POST /api/customers ──
 export const addCustomer = createAsyncThunk(
   "customers/add",
-  async (customerData: Omit<Customer, "id" | "joinDate" | "totalSpent" | "products">, { rejectWithValue }) => {
+  async (
+    customerData: Omit<Customer, "id" | "joinDate" | "totalSpent" | "products">,
+    { rejectWithValue },
+  ) => {
     try {
       const response = await Authaxios.post("api/customers", customerData);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to add customer");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to add customer",
+      );
     }
-  }
+  },
 );
 
 // ── PUT /api/customers/{id} ──
 export const updateCustomer = createAsyncThunk(
   "customers/update",
-  async ({ id, data }: { id: string; data: Partial<Customer> }, { rejectWithValue }) => {
+  async (
+    { id, data }: { id: string; data: Partial<Customer> },
+    { rejectWithValue },
+  ) => {
     try {
       const response = await Authaxios.put(`api/customers/${id}`, data);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to update customer");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update customer",
+      );
     }
-  }
+  },
 );
 
 // ── DELETE /api/customers/{id} ──
@@ -106,44 +139,64 @@ export const deleteCustomer = createAsyncThunk(
       await Authaxios.delete(`api/customers/${id}`);
       return id; // Return the id to remove it from state
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to delete customer");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete customer",
+      );
     }
-  }
+  },
 );
 
 // ── POST /api/customers/{id}/products ──
 export const addProduct = createAsyncThunk(
   "customers/addProduct",
-  async ({ id, productData }: { id: string; productData: Omit<Product, "id"> }, { rejectWithValue }) => {
+  async (
+    { id, productData }: { id: string; productData: Omit<Product, "id"> },
+    { rejectWithValue },
+  ) => {
     try {
-      const response = await Authaxios.post(`api/customers/${id}/products`, productData);
+      const response = await Authaxios.post(
+        `api/customers/${id}/products`,
+        productData,
+      );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to add product");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to add product",
+      );
     }
-  }
+  },
 );
 
 // ── DELETE /api/customers/{id}/products/{productId} ──
 export const removeProduct = createAsyncThunk(
   "customers/removeProduct",
-  async ({ id, productId }: { id: string; productId: string }, { rejectWithValue }) => {
+  async (
+    { id, productId }: { id: string; productId: string },
+    { rejectWithValue },
+  ) => {
     try {
-      const response = await Authaxios.delete(`api/customers/${id}/products/${productId}`);
+      const response = await Authaxios.delete(
+        `api/customers/${id}/products/${productId}`,
+      );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to remove product");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to remove product",
+      );
     }
-  }
+  },
 );
 
 // ── POST /api/upload ──
 export const uploadCustomerBill = createAsyncThunk(
   "customers/uploadBill",
-  async ({ customerId, file }: { customerId: string; file: File }, { rejectWithValue }) => {
+  async (
+    { customerId, file }: { customerId: string; file: File },
+    { rejectWithValue },
+  ) => {
     try {
       const formData = new FormData();
-      
+
       formData.append("customerId", customerId);
       formData.append("file", file);
       const response = await Authaxios.post("api/upload", formData, {
@@ -154,27 +207,46 @@ export const uploadCustomerBill = createAsyncThunk(
 
       const imageUrl = response.data?.url || response.data?.data?.url;
       if (!imageUrl) {
-        return rejectWithValue("Upload succeeded but no bill image URL was returned");
+        return rejectWithValue(
+          "Upload succeeded but no bill image URL was returned",
+        );
       }
 
-      return { customerId, imageUrl, customer: response.data?.customer || response.data?.data?.customer };
+      return {
+        customerId,
+        imageUrl,
+        customer: response.data?.customer || response.data?.data?.customer,
+      };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || error.response?.data || "Failed to upload bill image");
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.response?.data ||
+          "Failed to upload bill image",
+      );
     }
-  }
+  },
 );
 
 //whatsapp message action can be added here similarly if needed
 export const sendWhatsAppBill = createAsyncThunk(
   "customers/sendWhatsAppBill",
-  async ({ customerId }: { customerId: string }, { rejectWithValue }) => {
+  async (data: SendBillImageRequest, { rejectWithValue }) => {
     try {
-      const response = await Authaxios.post(`api/whatsapp/send-bill/${customerId}`);
-      return response.data;
+      const response = await Authaxios.post("api/whatsapp/send-bill-image", {
+        phoneNumber: data.phoneNumber,
+        imageUrl: data.imageUrl,
+        caption: data.caption,
+      });
+
+      return { customerId: data.customerId, response: response.data };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to send WhatsApp bill");
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.response?.data ||
+          "Failed to send WhatsApp bill",
+      );
     }
-  }
+  },
 );
 
 const ensureBillUploadState = (state: CustomerState, customerId: string) => {
@@ -189,6 +261,16 @@ const ensureBillUploadState = (state: CustomerState, customerId: string) => {
   return state.billUploads[customerId];
 };
 
+const ensureWhatsAppBillState = (state: CustomerState, customerId: string) => {
+  if (!state.whatsAppBills[customerId]) {
+    state.whatsAppBills[customerId] = {
+      loading: false,
+      error: null,
+    };
+  }
+
+  return state.whatsAppBills[customerId];
+};
 
 const customerSlice = createSlice({
   name: "customers",
@@ -203,7 +285,10 @@ const customerSlice = createSlice({
     builder.addCase(getAllCustomers.fulfilled, (state, action) => {
       state.loading = false;
       state.customers = action.payload.data;
-      state.billUploads = createBillUploadsFromCustomers(action.payload.data, state.billUploads);
+      state.billUploads = createBillUploadsFromCustomers(
+        action.payload.data,
+        state.billUploads,
+      );
     });
     builder.addCase(getAllCustomers.rejected, (state, action) => {
       state.loading = false;
@@ -217,7 +302,9 @@ const customerSlice = createSlice({
 
     // Update
     builder.addCase(updateCustomer.fulfilled, (state, action) => {
-      const index = state.customers.findIndex((c) => c.id === action.payload.data.id);
+      const index = state.customers.findIndex(
+        (c) => c.id === action.payload.data.id,
+      );
       if (index !== -1) {
         state.customers[index] = action.payload.data;
       }
@@ -230,7 +317,9 @@ const customerSlice = createSlice({
 
     // Add Product
     builder.addCase(addProduct.fulfilled, (state, action) => {
-      const index = state.customers.findIndex((c) => c.id === action.payload.data.id);
+      const index = state.customers.findIndex(
+        (c) => c.id === action.payload.data.id,
+      );
       if (index !== -1) {
         state.customers[index] = action.payload.data; // Backend returns the full updated customer
       }
@@ -238,7 +327,9 @@ const customerSlice = createSlice({
 
     // Remove Product
     builder.addCase(removeProduct.fulfilled, (state, action) => {
-      const index = state.customers.findIndex((c) => c.id === action.payload.data.id);
+      const index = state.customers.findIndex(
+        (c) => c.id === action.payload.data.id,
+      );
       if (index !== -1) {
         state.customers[index] = action.payload.data;
       }
@@ -246,17 +337,27 @@ const customerSlice = createSlice({
 
     // Upload Bill
     builder.addCase(uploadCustomerBill.pending, (state, action) => {
-      const uploadState = ensureBillUploadState(state, action.meta.arg.customerId);
+      const uploadState = ensureBillUploadState(
+        state,
+        action.meta.arg.customerId,
+      );
       uploadState.loading = true;
       uploadState.error = null;
     });
     builder.addCase(uploadCustomerBill.fulfilled, (state, action) => {
-      const uploadState = ensureBillUploadState(state, action.payload.customerId);
+      const uploadState = ensureBillUploadState(
+        state,
+        action.payload.customerId,
+      );
       uploadState.loading = false;
-      uploadState.images = Array.from(new Set([action.payload.imageUrl, ...uploadState.images]));
+      uploadState.images = Array.from(
+        new Set([action.payload.imageUrl, ...uploadState.images]),
+      );
 
       if (action.payload.customer) {
-        const index = state.customers.findIndex((c) => c.id === action.payload.customer.id);
+        const index = state.customers.findIndex(
+          (c) => c.id === action.payload.customer.id,
+        );
         if (index !== -1) {
           state.customers[index] = action.payload.customer;
         }
@@ -265,23 +366,36 @@ const customerSlice = createSlice({
       }
     });
     builder.addCase(uploadCustomerBill.rejected, (state, action) => {
-      const uploadState = ensureBillUploadState(state, action.meta.arg.customerId);
+      const uploadState = ensureBillUploadState(
+        state,
+        action.meta.arg.customerId,
+      );
       uploadState.loading = false;
       uploadState.error = action.payload as string;
     });
+    // Send WhatsApp Bill
     builder.addCase(sendWhatsAppBill.pending, (state, action) => {
-      const uploadState = ensureBillUploadState(state, action.meta.arg.customerId);
-      uploadState.loading = true;
-      uploadState.error = null;
+      const whatsAppState = ensureWhatsAppBillState(
+        state,
+        action.meta.arg.customerId,
+      );
+      whatsAppState.loading = true;
+      whatsAppState.error = null;
     });
     builder.addCase(sendWhatsAppBill.fulfilled, (state, action) => {
-      const uploadState = ensureBillUploadState(state, action.payload.customerId);
-      uploadState.loading = false;
+      const whatsAppState = ensureWhatsAppBillState(
+        state,
+        action.payload.customerId,
+      );
+      whatsAppState.loading = false;
     });
     builder.addCase(sendWhatsAppBill.rejected, (state, action) => {
-      const uploadState = ensureBillUploadState(state, action.meta.arg.customerId);
-      uploadState.loading = false;
-      uploadState.error = action.payload as string;
+      const whatsAppState = ensureWhatsAppBillState(
+        state,
+        action.meta.arg.customerId,
+      );
+      whatsAppState.loading = false;
+      whatsAppState.error = action.payload as string;
     });
   },
 });
