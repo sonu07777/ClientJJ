@@ -1,5 +1,5 @@
 import { Modal, Form, Input, Select, DatePicker, InputNumber, Button } from 'antd';
-import type { Customer } from '../App';
+import type { Customer } from '../../App';
 import dayjs from 'dayjs';
 
 interface EditCustomerModalProps {

@@ -1,5 +1,5 @@
 import { Table, Typography } from 'antd';
-import type { Product } from '../App';
+import type { Product } from '../../App';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;

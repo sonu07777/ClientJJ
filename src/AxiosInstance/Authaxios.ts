@@ -1,6 +1,6 @@
 import axios  from "axios";
 
-const baseUrl = "http://localhost:5284";
+const baseUrl = "http://localhost:5001";
 const Authaxios = axios.create({
     baseURL: baseUrl,
     withCredentials: true,

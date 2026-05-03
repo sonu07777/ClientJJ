@@ -13,7 +13,7 @@ interface SidebarProps {
   onSectionChange: (section: string) => void;
 }
 
-export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
+export function Sidebar({ currentSection }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const menuItems = [
@@ -21,11 +21,6 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
     { id: "employees", label: "All Employees", icon: TeamOutlined },
     { id: "about", label: "About", icon: InfoCircleOutlined },
   ];
-
-  const handleNavClick = (sectionId: string) => {
-    onSectionChange(sectionId);
-    setIsMobileOpen(false);
-  };
 
   return (
     <>

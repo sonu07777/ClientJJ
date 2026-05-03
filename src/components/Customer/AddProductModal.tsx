@@ -54,6 +54,7 @@ export function AddProductModal({ customerName, onClose, onAdd }: AddProductModa
       footer={null}
       destroyOnClose
     >
+
       <Form
         form={form}
         layout="vertical"
@@ -126,7 +127,7 @@ export function AddProductModal({ customerName, onClose, onAdd }: AddProductModa
           <DatePicker className="w-full" size="large" />
         </Form.Item>
 
-        {/* Summary */}
+        
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2 mb-4">
           <div className="flex items-center gap-2 text-blue-900 font-medium">
             <ShoppingOutlined />

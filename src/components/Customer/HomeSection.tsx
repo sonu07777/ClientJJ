@@ -17,7 +17,7 @@ interface HomeSectionProps {
   initialCustomers?: Customer[]; // Kept for layout compatibility but unused
 }
 
-export function HomeSection({ initialCustomers }: HomeSectionProps) {
+export function HomeSection(_props: HomeSectionProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { customers } = useSelector((state: RootState) => state.customers);
   
@@ -42,7 +42,7 @@ export function HomeSection({ initialCustomers }: HomeSectionProps) {
     dispatch(deleteCustomer(id));
   };
 
-  const handleAddProductToCustomer = (customerId: string, product: Omit<Product, "id" | "purchaseDate">) => {
+  const handleAddProductToCustomer = (customerId: string, product: Omit<Product, "id">) => {
     dispatch(addProduct({ id: customerId, productData: product }));
   };
 

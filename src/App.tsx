@@ -16,6 +16,7 @@ export interface Product {
   value: number;
   paid: number;
   pending: number;
+  billUrls?: string[];
   purchaseDate: string;
 }
 
@@ -28,6 +29,7 @@ export interface Customer {
   status: "active" | "inactive" | "pending";
   joinDate: string;
   totalSpent: number;
+  billUrls?: string[];
   products: Product[];
 }
 

@@ -1,51 +1,80 @@
 import { useState } from 'react';
-import { Table, Button, Tag, Space, Popconfirm } from 'antd';
+import { Table, Button, Tag, Space, Popconfirm, message as antdMessage } from 'antd';
 import { EditOutlined, DeleteOutlined, MailOutlined, PhoneOutlined, BankOutlined, WhatsAppOutlined, PlusOutlined } from '@ant-design/icons';
 import type { Customer, Product } from '../../App';
 import { EditCustomerModal } from './EditCustomerModal';
 import { AddProductModal } from './AddProductModal';
 import { ProductsList } from './ProductsList';
+import UploadeButton from '../UploadeButton';
+import Authaxios from '../../AxiosInstance/Authaxios';
 
 
 interface CustomerTableProps {
   customers: Customer[];
   onEdit: (customer: Customer) => void;
   onDelete: (id: string) => void;
-  onAddProduct?: (customerId: string, product: Omit<Product, 'id' | 'purchaseDate'>) => void;
+  onAddProduct?: (customerId: string, product: Omit<Product, 'id'>) => void;
   onDeleteProduct?: (customerId: string, productId: string) => void;
 }
 
 export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDeleteProduct }: CustomerTableProps) {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [addingProductFor, setAddingProductFor] = useState<Customer | null>(null);
+  const [sendingWhatsAppFor, setSendingWhatsAppFor] = useState<string | null>(null);
 
   const handleEdit = (customer: Customer) => {
     onEdit(customer);
     setEditingCustomer(null);
   };
 
-  const handleAddProduct = (customerId: string, product: Omit<Product, 'id' | 'purchaseDate'>) => {
+  const handleAddProduct = (customerId: string, product: Omit<Product, 'id'>) => {
     if (onAddProduct) {
       onAddProduct(customerId, product);
     }
     setAddingProductFor(null);
   };
 
-  const sendWhatsAppMessage = (customer: Customer) => {
-    const cleanPhone = customer.phone.replace(/\D/g, '');
+  const getLatestBillUrl = (customer: Customer) => {
+    const billUrls = [
+      ...(customer.billUrls ?? []),
+      ...customer.products.flatMap((product) => product.billUrls ?? []),
+    ].filter(Boolean);
+
+    return billUrls[billUrls.length - 1];
+  };
+
+  const sendWhatsAppMessage = async (customer: Customer) => {
+    const latestBillUrl = getLatestBillUrl(customer);
+
+    if (!latestBillUrl) {
+      antdMessage.warning('Upload a bill image before sending WhatsApp');
+      return;
+    }
+
     const totalPending = customer.products.reduce((sum, p) => sum + p.pending, 0);
     
-    let message = '';
+    let caption = '';
     if (totalPending > 0) {
-      message = `Hello ${customer.name}, you have a pending payment of ₹${totalPending.toLocaleString('en-IN')} with us. Please let us know if you need any assistance with the payment.`;
+      caption = `Hello ${customer.name}, your bill is attached. Pending payment: ₹${totalPending.toLocaleString('en-IN')}.`;
     } else if (customer.status === 'pending') {
-      message = `Hello ${customer.name}, we noticed you have a pending registration with us at ${customer.company}. We'd love to complete your onboarding!`;
+      caption = `Hello ${customer.name}, your bill is attached. Please let us know if you need any assistance.`;
     } else {
-      message = `Hello ${customer.name}, thank you for being a valued customer! Please let us know if you need any assistance.`;
+      caption = `Hello ${customer.name}, your bill is attached. Thank you for being a valued customer.`;
     }
-    
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+
+    try {
+      setSendingWhatsAppFor(customer.id);
+      await Authaxios.post('api/whatsapp/send-bill-image', {
+        phoneNumber: customer.phone,
+        imageUrl: latestBillUrl,
+        caption,
+      });
+      antdMessage.success('Bill image sent on WhatsApp');
+    } catch (error: any) {
+      antdMessage.error(error.response?.data?.message || error.response?.data || 'Failed to send WhatsApp bill');
+    } finally {
+      setSendingWhatsAppFor(null);
+    }
   };
 
   const columns = [
@@ -79,6 +108,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
             type="link"
             icon={<WhatsAppOutlined />}
             onClick={() => sendWhatsAppMessage(record)}
+            loading={sendingWhatsAppFor === record.id}
             className="p-0 h-auto text-green-600 hover:text-green-700"
           >
             Send WhatsApp
@@ -194,6 +224,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
                   </Button>
                 </div>
                 <ProductsList products={record.products} onDelete={onDeleteProduct ? (productId) => onDeleteProduct(record.id, productId) : undefined} />
+                <UploadeButton customerId={record.id} />
               </div>
             ),
             rowExpandable: () => true,
