@@ -46,8 +46,29 @@ npm run dev
 Optional env file:
 ```bash
 # .env
-VITE_API_BASE_URL=http://localhost:5099/api
+VITE_API_BASE_URL=http://localhost:5099
 ```
+
+`VITE_API_BASE_URL` should be the backend origin only, without `/api`,
+because the frontend already calls paths like `/api/customers`.
+
+## Deploy frontend on Render
+
+This repository includes `render.yaml` for a Render Static Site.
+
+Render settings:
+- Service type: Static Site
+- Build command: `npm ci && npm run build`
+- Publish directory: `dist`
+- Environment variable: `VITE_API_BASE_URL=https://YOUR-BACKEND-URL`
+- Rewrite rule: source `/*`, destination `/index.html`
+
+The `render.yaml` route rewrite sends all client-side routes to
+`/index.html`, so direct links like `/home` work after refresh.
+
+Before deploying, make sure your backend allows requests from your Render
+frontend URL in CORS. If you use cookies, the backend cookies must be
+cross-site compatible over HTTPS.
 
 ## Demo backend links to use now
 
