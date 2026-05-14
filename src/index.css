@@ -1,1 +1,60 @@
 @import "tailwindcss";
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.responsive-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.responsive-table {
+  min-width: 0;
+}
+
+.responsive-table .ant-table-wrapper,
+.responsive-table .ant-spin-nested-loading,
+.responsive-table .ant-spin-container,
+.responsive-table .ant-table {
+  min-width: 0;
+}
+
+.responsive-table .ant-table-cell {
+  vertical-align: top;
+}
+
+.responsive-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+}
+
+.responsive-table .ant-pagination {
+  padding-inline: 12px;
+}
+
+@media (max-width: 640px) {
+  .responsive-table .ant-table {
+    font-size: 13px;
+  }
+
+  .responsive-table .ant-table-cell {
+    padding: 10px 8px !important;
+  }
+
+  .responsive-table .ant-table-expanded-row > .ant-table-cell {
+    padding: 0 !important;
+  }
+
+  .responsive-table .ant-pagination {
+    justify-content: center;
+    row-gap: 8px;
+  }
+}

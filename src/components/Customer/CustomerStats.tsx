@@ -51,19 +51,19 @@ export function CustomerStats({ customers }: CustomerStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {stats.map((stat, index) => (
-        <div key={index} className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div>
+        <div key={index} className="bg-white rounded-lg shadow-sm p-4 sm:p-6 min-w-0">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
               <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-              <p className="text-3xl font-bold text-gray-900">
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 responsive-text">
                 {stat.showCurrency && '₹'}
                 {stat.value}
               </p>
             </div>
-            <div className={`${stat.color} p-3 rounded-lg flex items-center justify-center`}>
-              <stat.icon className="text-2xl text-white" />
+            <div className={`${stat.color} p-3 rounded-lg flex shrink-0 items-center justify-center`}>
+              <stat.icon className="text-xl sm:text-2xl text-white" />
             </div>
           </div>
         </div>

@@ -79,11 +79,11 @@ export function HomeSection(_props: HomeSectionProps) {
   return (
     <SideBarMainLayout>
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 responsive-text">
           Customer Management
         </h1>
-        <p className="text-gray-600">
+        <p className="text-sm sm:text-base text-gray-600 responsive-text">
           Manage and track your customer relationships
         </p>
       </div>
@@ -92,7 +92,7 @@ export function HomeSection(_props: HomeSectionProps) {
       <CustomerStats customers={customers} />
 
       {/* Actions Bar */}
-      <div className="bg-white rounded-lg shadow-sm p-4 space-y-4">
+      <div className="bg-white rounded-lg shadow-sm p-4 space-y-4 min-w-0">
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
           <Input
             placeholder="Search customers..."
@@ -109,19 +109,20 @@ export function HomeSection(_props: HomeSectionProps) {
             icon={<PlusOutlined />}
             onClick={() => setIsAddModalOpen(true)}
             size="large"
-            className="bg-blue-600"
+            className="bg-blue-600 w-full sm:w-auto"
           >
             Add Customer
           </Button>
         </div>
 
         {/* Date Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
           <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
             Filter by Join Date:
           </span>
           <RangePicker
             value={dateFilter}
+            className="w-full sm:w-auto"
             onChange={(dates: any) =>
               setDateFilter(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])
             }

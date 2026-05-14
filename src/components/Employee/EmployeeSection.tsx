@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Table, Input, Select, Tag, Button, Space, Popconfirm } from 'antd';
+import type { TableProps } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { SideBarMainLayout } from '../../Layout/SideBarMainLayout';
@@ -75,29 +76,31 @@ export function EmployeeSection() {
     }
   ];
 
-  const columns = [
+  const columns: TableProps<Employee>['columns'] = [
     {
       title: 'Employee',
       key: 'employee',
+      width: 220,
       render: (_: any, record: Employee) => (
-        <div>
-          <div className="font-medium text-gray-900">{record.name}</div>
-          <div className="text-sm text-gray-500">{record.role}</div>
+        <div className="min-w-0">
+          <div className="font-medium text-gray-900 responsive-text">{record.name}</div>
+          <div className="text-sm text-gray-500 responsive-text">{record.role}</div>
         </div>
       ),
     },
     {
       title: 'Contact',
       key: 'contact',
+      width: 280,
       render: (_: any, record: Employee) => (
         <Space direction="vertical" size="small" style={{ display: 'flex' }}>
-          <div className="flex items-center gap-2 text-sm text-gray-900">
-            <MailOutlined className="text-gray-400" />
-            {record.email}
+          <div className="flex items-start gap-2 text-sm text-gray-900 min-w-0">
+            <MailOutlined className="text-gray-400 mt-0.5 shrink-0" />
+            <span className="responsive-text">{record.email}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <PhoneOutlined className="text-gray-400" />
-            {record.phone}
+          <div className="flex items-start gap-2 text-sm text-gray-500 min-w-0">
+            <PhoneOutlined className="text-gray-400 mt-0.5 shrink-0" />
+            <span className="responsive-text">{record.phone}</span>
           </div>
         </Space>
       ),
@@ -106,12 +109,16 @@ export function EmployeeSection() {
       title: 'Department',
       dataIndex: 'department',
       key: 'department',
+      width: 160,
+      responsive: ['md'],
+      render: (department: string) => <span className="responsive-text">{department}</span>,
     },
 
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      width: 130,
       render: (status: string) => {
         let color = 'gold';
         if (status === 'active') color = 'green';
@@ -127,13 +134,16 @@ export function EmployeeSection() {
       title: 'Join Date',
       dataIndex: 'joinDate',
       key: 'joinDate',
+      width: 140,
+      responsive: ['lg'],
       render: (date: string) => dayjs(date).format('MMM D, YYYY'),
     },
     {
       title: 'Actions',
       key: 'actions',
+      width: 110,
       render: (_: any, record: Employee) => (
-        <Space size="middle">
+        <Space size="small" wrap>
           <Button
             icon={<EditOutlined />}
             type="primary"
@@ -164,28 +174,28 @@ export function EmployeeSection() {
     <SideBarMainLayout>
     
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">All Employees</h1>
-        <p className="text-gray-600">Manage and track your team members</p>
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 responsive-text">All Employees</h1>
+        <p className="text-sm sm:text-base text-gray-600 responsive-text">Manage and track your team members</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
+          <div key={index} className="bg-white rounded-lg shadow-sm p-4 sm:p-6 min-w-0">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
                 <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 responsive-text">{stat.value}</p>
               </div>
-              <div className={`${stat.color} w-12 h-12 rounded-lg`}></div>
+              <div className={`${stat.color} w-10 h-10 sm:w-12 sm:h-12 rounded-lg shrink-0`}></div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
+      <div className="bg-white rounded-lg shadow-sm p-4 min-w-0">
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
           <Input
             placeholder="Search employees..."
@@ -195,12 +205,12 @@ export function EmployeeSection() {
             className="w-full sm:w-96"
             size="large"
           />
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
             <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Department:</span>
             <Select
               value={departmentFilter}
               onChange={setDepartmentFilter}
-              className="w-48"
+              className="w-full sm:w-48"
               size="large"
             >
               {departments.map(dept => (
@@ -214,7 +224,7 @@ export function EmployeeSection() {
               icon={<PlusOutlined />}
               onClick={() => setIsAddModalOpen(true)}
               size="large"
-              className="bg-blue-600 ml-4"
+              className="bg-blue-600 w-full sm:w-auto sm:ml-4"
             >
               Add Employee
             </Button>
@@ -223,12 +233,13 @@ export function EmployeeSection() {
       </div>
 
       {/* Employee Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden responsive-table">
         <Table
           columns={columns}
           dataSource={filteredEmployees}
           rowKey="id"
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 10, responsive: true, position: ['bottomCenter'], showSizeChanger: false }}
+          scroll={{ x: 760 }}
           loading={loading}
         />
       </div>

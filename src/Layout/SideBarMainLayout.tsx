@@ -21,17 +21,14 @@ export function SideBarMainLayout({
 }: SidebarProps) {
   const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [currentSectionState, setCurrentSectionState] = useState("");
 
   const menuItems = [
     { id: "home", label: "Home", icon: HomeOutlined },
     { id: "employees", label: "All Employees", icon: TeamOutlined },
     { id: "about", label: "About", icon: InfoCircleOutlined },
   ];
-  console.log("Current Section in Layout:", currentSectionState);
-  const handleNavClick = (sectionId: string) => {
+  const handleNavClick = () => {
     // onSectionChange(sectionId);
-    setCurrentSectionState(sectionId);
     setIsMobileOpen(false);
   };
 
@@ -60,8 +57,8 @@ export function SideBarMainLayout({
       )}
 
       {/* Sidebar */}
-      <div className="flex-1 lg:ml-64">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16 lg:mt-0">
+      <div className="flex-1 min-w-0 w-full lg:ml-64">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 mt-16 lg:mt-0 overflow-x-hidden">
           <div
             className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
               isMobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -70,7 +67,7 @@ export function SideBarMainLayout({
             <div className="flex flex-col h-full">
               {/* Logo/Header */}
               <div className="p-6 border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-blue-600">
+                <h2 className="text-2xl font-bold text-blue-600 responsive-text">
                   Jaggnath Motors
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">Management System</p>
@@ -86,7 +83,7 @@ export function SideBarMainLayout({
                       <li key={item.id}>
                         <Link to={`/${item.id}`}>
                           <button
-                            onClick={() => handleNavClick(item.id)}
+                            onClick={handleNavClick}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors 
                         ${
                           isActive

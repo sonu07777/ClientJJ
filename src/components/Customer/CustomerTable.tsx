@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Table, Button, Tag, Space, Popconfirm, message as antdMessage } from 'antd';
+import type { TableProps } from 'antd';
 import { EditOutlined, DeleteOutlined, MailOutlined, PhoneOutlined, BankOutlined, WhatsAppOutlined, PlusOutlined } from '@ant-design/icons';
 import type { Customer, Product } from '../../App';
 import { EditCustomerModal } from './EditCustomerModal';
@@ -78,16 +79,17 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
     }
   };
 
-  const columns = [
+  const columns: TableProps<Customer>['columns'] = [
     {
       title: 'Customer',
       key: 'customer',
+      width: 220,
       render: (_: any, record: Customer) => (
-        <div>
-          <div className="font-medium text-gray-900">{record.name}</div>
-          <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-            <BankOutlined />
-            {record.company}
+        <div className="min-w-0">
+          <div className="font-medium text-gray-900 responsive-text">{record.name}</div>
+          <div className="flex items-start gap-1 text-sm text-gray-500 mt-1 min-w-0">
+            <BankOutlined className="mt-0.5 shrink-0" />
+            <span className="responsive-text">{record.company}</span>
           </div>
         </div>
       ),
@@ -95,15 +97,16 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
     {
       title: 'Contact',
       key: 'contact',
+      width: 280,
       render: (_: any, record: Customer) => (
         <Space direction="vertical" size="small" style={{ display: 'flex' }}>
-          <div className="flex items-center gap-2 text-sm text-gray-900">
-            <MailOutlined className="text-gray-400" />
-            {record.email}
+          <div className="flex items-start gap-2 text-sm text-gray-900 min-w-0">
+            <MailOutlined className="text-gray-400 mt-0.5 shrink-0" />
+            <span className="responsive-text">{record.email}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <PhoneOutlined className="text-gray-400" />
-            {record.phone}
+          <div className="flex items-start gap-2 text-sm text-gray-500 min-w-0">
+            <PhoneOutlined className="text-gray-400 mt-0.5 shrink-0" />
+            <span className="responsive-text">{record.phone}</span>
           </div>
           <Button
             type="link"
@@ -121,6 +124,8 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      width: 120,
+      responsive: ['sm'],
       render: (status: string) => {
         let color = 'gold';
         if (status === 'active') color = 'green';
@@ -135,6 +140,8 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
     {
       title: 'Products',
       key: 'productsCount',
+      width: 120,
+      responsive: ['md'],
       render: (_: any, record: Customer) => (
         <span className="text-sm text-gray-900">
           <span className="font-medium">{record.products.length}</span> product{record.products.length !== 1 ? 's' : ''}
@@ -144,6 +151,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
     {
       title: 'Paid / Pending',
       key: 'paidPending',
+      width: 150,
       render: (_: any, record: Customer) => {
         const totalPaid = record.products.reduce((sum, p) => sum + p.paid, 0);
         const totalPending = record.products.reduce((sum, p) => sum + p.pending, 0);
@@ -164,8 +172,9 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
     {
       title: 'Actions',
       key: 'actions',
+      width: 140,
       render: (_: any, record: Customer) => (
-        <Space size="middle">
+        <Space size="small" wrap>
           <Button
             icon={<PlusOutlined />}
             onClick={() => setAddingProductFor(record)}
@@ -204,22 +213,23 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden responsive-table">
         <Table
           columns={columns}
           dataSource={customers}
           rowKey="id"
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 10, responsive: true, position: ['bottomCenter'], showSizeChanger: false }}
+          scroll={{ x: 760 }}
           expandable={{
             expandedRowRender: (record) => (
-              <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg m-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-base font-semibold text-gray-900">Products Purchased</h4>
+              <div className="p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-lg m-2 sm:m-4 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                  <h4 className="text-base font-semibold text-gray-900 responsive-text">Products Purchased</h4>
                   <Button
                     type="primary"
                     icon={<PlusOutlined />}
                     onClick={() => setAddingProductFor(record)}
-                    className="bg-blue-600"
+                    className="bg-blue-600 w-full sm:w-auto"
                   >
                     Add Product
                   </Button>

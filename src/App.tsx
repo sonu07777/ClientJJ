@@ -226,7 +226,7 @@ export default function App() {
   // };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex min-w-0 w-full">
       {/* Sidebar */}
       {/* <Sidebar
         // currentSection={currentSection}
