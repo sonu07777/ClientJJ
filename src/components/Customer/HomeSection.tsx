@@ -18,6 +18,7 @@ interface HomeSectionProps {
 }
 
 export function HomeSection(_props: HomeSectionProps) {
+  void _props;
   const dispatch = useDispatch<AppDispatch>();
   const { customers } = useSelector((state: RootState) => state.customers);
   
@@ -123,7 +124,7 @@ export function HomeSection(_props: HomeSectionProps) {
           <RangePicker
             value={dateFilter}
             className="w-full sm:w-auto"
-            onChange={(dates: any) =>
+            onChange={(dates) =>
               setDateFilter(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])
             }
           />
@@ -143,7 +144,7 @@ export function HomeSection(_props: HomeSectionProps) {
       {isAddModalOpen && (
         <AddCustomerModal
           onClose={() => setIsAddModalOpen(false)}
-          onAdd={handleAddCustomer as any}
+          onAdd={(customer) => handleAddCustomer(customer)}
         />
       )}
     </SideBarMainLayout>

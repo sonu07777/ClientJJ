@@ -1,19 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, notification } from "antd";
 import type {AppDispatch, RootState}  from "../Redux/Store";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../Redux/Slice/AuthSlice";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+
+interface LoginForm {
+  email: string;
+  password: string;
+}
 
 function Login() {  
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading } = useSelector((state: RootState) => state.Auth);
+  const location = useLocation();
+  const { loading, isLoggedIn } = useSelector((state: RootState) => state.Auth);
   const [api, contextHolder] = notification.useNotification();
-  const [loginData , setLoginData] = useState<any>({
+  const [loginData , setLoginData] = useState<LoginForm>({
     email:"",
     password:""
   });
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || "/home";
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate(from, { replace: true });
+    }
+  }, [from, isLoggedIn, navigate]);
 
   function handelUserInput(event: React.ChangeEvent<HTMLInputElement>) {
     const {name , value } = event.target;
@@ -31,10 +44,10 @@ function Login() {
     if(login.fulfilled.match(response) && response.payload?.success){
       api.success({
         message: "Login successful",
-        description: "Welcome back to Jaggnath Motors.",
+        description: "Welcome back to Jagganath Motors.",
         placement: "topRight",
       });
-      navigate("/home");
+      navigate(from, { replace: true });
       setLoginData({
         email:"",
         password:""

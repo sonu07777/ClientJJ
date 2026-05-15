@@ -1,23 +1,33 @@
-import { Table, Typography } from 'antd';
+import { Button, message, Space, Table, Typography } from 'antd';
 import type { TableProps } from 'antd';
-import type { Product } from '../../App';
+import type { Customer, Product } from '../../App';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
 
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PrinterOutlined } from '@ant-design/icons';
+import { printProductBill } from '../../utils/printProductBill';
 
 interface ProductsListProps {
   products: Product[];
+  customer: Customer;
   onDelete?: (productId: string) => void;
 }
 
-export function ProductsList({ products, onDelete }: ProductsListProps) {
+export function ProductsList({ products, customer, onDelete }: ProductsListProps) {
   if (products.length === 0) {
     return (
       <div className="text-sm text-gray-500 italic py-2">No products purchased yet</div>
     );
   }
+
+  const handlePrint = (product: Product) => {
+    const didOpen = printProductBill({ customer, product });
+
+    if (!didOpen) {
+      message.error('Please allow pop-ups to print the bill');
+    }
+  };
 
   const columns: TableProps<Product>['columns'] = [
     {
@@ -58,15 +68,25 @@ export function ProductsList({ products, onDelete }: ProductsListProps) {
     {
       title: 'Actions',
       key: 'actions',
-      width: 90,
-      render: (_: any, record: Product) => (
-        onDelete ? (
-          <DeleteOutlined
-            className="text-red-500 cursor-pointer hover:text-red-700"
-            onClick={() => onDelete(record.id)}
-            title="Remove Product"
+      width: 120,
+      render: (_: unknown, record: Product) => (
+        <Space size="middle">
+          <Button
+            icon={<PrinterOutlined />}
+            onClick={() => handlePrint(record)}
+            shape="circle"
+            title="Print bill"
+            type="primary"
+            ghost
           />
-        ) : null
+          {onDelete ? (
+            <DeleteOutlined
+              className="text-red-500 cursor-pointer hover:text-red-700"
+              onClick={() => onDelete(record.id)}
+              title="Remove Product"
+            />
+          ) : null}
+        </Space>
       )
     }
   ];
@@ -79,7 +99,7 @@ export function ProductsList({ products, onDelete }: ProductsListProps) {
         rowKey="id"
         pagination={false}
         size="small"
-        scroll={{ x: 780 }}
+        scroll={{ x: 820 }}
         summary={(pageData) => {
           let totalValue = 0;
           let totalPaid = 0;

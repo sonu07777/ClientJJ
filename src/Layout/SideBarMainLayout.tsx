@@ -4,9 +4,13 @@ import {
   TeamOutlined,
   MenuOutlined,
   CloseOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../Redux/Store";
+import { logoutUser } from "../Redux/Slice/AuthSlice";
 
 interface SidebarProps {
   children: React.ReactNode;
@@ -20,6 +24,8 @@ export function SideBarMainLayout({
   //   onSectionChange,
 }: SidebarProps) {
   const location = useLocation();
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const menuItems = [
@@ -32,7 +38,11 @@ export function SideBarMainLayout({
     setIsMobileOpen(false);
   };
 
-  useEffect(() => {}, []);
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    setIsMobileOpen(false);
+    navigate("/", { replace: true });
+  };
 
   return (
     <>
@@ -68,7 +78,7 @@ export function SideBarMainLayout({
               {/* Logo/Header */}
               <div className="p-6 border-b border-gray-200">
                 <h2 className="text-2xl font-bold text-blue-600 responsive-text">
-                  Jaggnath Motors
+                  Jagganath Motors
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">Management System</p>
               </div>
@@ -103,6 +113,13 @@ export function SideBarMainLayout({
 
               {/* Footer */}
               <div className="p-4 border-t border-gray-200">
+                <button
+                  onClick={handleLogout}
+                  className="mb-4 w-full flex items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2 font-medium text-red-600 transition-colors hover:bg-red-50"
+                >
+                  <LogoutOutlined />
+                  <span>Logout</span>
+                </button>
                 <p className="text-xs text-gray-500 text-center">
                   © 2026 Management Dashboard
                 </p>

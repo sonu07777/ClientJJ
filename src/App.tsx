@@ -4,7 +4,7 @@ import { HomeSection } from "./components/Customer/HomeSection";
 import { AboutSection } from "./components/AboutSection";
 import { EmployeeSection } from "./components/Employee/EmployeeSection";
 // import { SideBarMainLayout } from "./Layout/SideBarMainLayout";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./Pages/Login";
 import AccessDenied from "./components/AccessDenied";
 import RequreAuth from "./Authentication /RequreAuth";
@@ -247,10 +247,11 @@ export default function App() {
             path="/home"
             element={<HomeSection initialCustomers={initialCustomers} />}
           />
+          <Route path="/employees" element={<EmployeeSection />} />
+          <Route path="/about" element={<AboutSection />} />
         </Route>
-        <Route path="/employees" element={<EmployeeSection />} />
-        <Route path="/about" element={<AboutSection />} />
         <Route path="/denied" element={<AccessDenied />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </div>
     //   </div>

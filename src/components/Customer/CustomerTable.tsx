@@ -74,8 +74,9 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
         caption,
       })).unwrap();
       antdMessage.success('Bill image sent on WhatsApp');
-    } catch (error: any) {
-      antdMessage.error(error || 'Failed to send WhatsApp bill');
+    } catch (error: unknown) {
+      const errorMessage = typeof error === 'string' ? error : 'Failed to send WhatsApp bill';
+      antdMessage.error(errorMessage);
     }
   };
 
@@ -84,7 +85,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
       title: 'Customer',
       key: 'customer',
       width: 220,
-      render: (_: any, record: Customer) => (
+      render: (_: unknown, record: Customer) => (
         <div className="min-w-0">
           <div className="font-medium text-gray-900 responsive-text">{record.name}</div>
           <div className="flex items-start gap-1 text-sm text-gray-500 mt-1 min-w-0">
@@ -98,7 +99,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
       title: 'Contact',
       key: 'contact',
       width: 280,
-      render: (_: any, record: Customer) => (
+      render: (_: unknown, record: Customer) => (
         <Space direction="vertical" size="small" style={{ display: 'flex' }}>
           <div className="flex items-start gap-2 text-sm text-gray-900 min-w-0">
             <MailOutlined className="text-gray-400 mt-0.5 shrink-0" />
@@ -142,7 +143,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
       key: 'productsCount',
       width: 120,
       responsive: ['md'],
-      render: (_: any, record: Customer) => (
+      render: (_: unknown, record: Customer) => (
         <span className="text-sm text-gray-900">
           <span className="font-medium">{record.products.length}</span> product{record.products.length !== 1 ? 's' : ''}
         </span>
@@ -152,7 +153,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
       title: 'Paid / Pending',
       key: 'paidPending',
       width: 150,
-      render: (_: any, record: Customer) => {
+      render: (_: unknown, record: Customer) => {
         const totalPaid = record.products.reduce((sum, p) => sum + p.paid, 0);
         const totalPending = record.products.reduce((sum, p) => sum + p.pending, 0);
         return (
@@ -173,7 +174,7 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
       title: 'Actions',
       key: 'actions',
       width: 140,
-      render: (_: any, record: Customer) => (
+      render: (_: unknown, record: Customer) => (
         <Space size="small" wrap>
           <Button
             icon={<PlusOutlined />}
@@ -234,7 +235,11 @@ export function CustomerTable({ customers, onEdit, onDelete, onAddProduct, onDel
                     Add Product
                   </Button>
                 </div>
-                <ProductsList products={record.products} onDelete={onDeleteProduct ? (productId) => onDeleteProduct(record.id, productId) : undefined} />
+                <ProductsList
+                  customer={record}
+                  products={record.products}
+                  onDelete={onDeleteProduct ? (productId) => onDeleteProduct(record.id, productId) : undefined}
+                />
                 <UploadeButton customerId={record.id} />
               </div>
             ),

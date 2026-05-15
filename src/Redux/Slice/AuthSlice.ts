@@ -34,10 +34,23 @@ export const login = createAsyncThunk("auths/logindata", async(data: { email: st
   }
 });
 
+export const logoutUser = createAsyncThunk("auths/logout", async () => {
+  await axiosinstance.post("api/auth/logout");
+});
+
 const authSlice = createSlice({
     name: "Auth",
     initialState,
-    reducers:{},
+    reducers:{
+      logout: (state) => {
+        state.isLoggedIn = false;
+        state.role = "";
+        state.loading = false;
+        state.error = null;
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("role");
+      },
+    },
     extraReducers: (builder) => {
         builder.addCase(login.pending, (state) => {
           state.loading = true;
@@ -68,7 +81,25 @@ const authSlice = createSlice({
             localStorage.removeItem("role");
             // localStorage.removeItem("data");
         });
+        builder.addCase(logoutUser.fulfilled, (state) => {
+            state.isLoggedIn = false;
+            state.role = "";
+            state.loading = false;
+            state.error = null;
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("role");
+        });
+        builder.addCase(logoutUser.rejected, (state) => {
+            state.isLoggedIn = false;
+            state.role = "";
+            state.loading = false;
+            state.error = null;
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("role");
+        });
     }
 })
+
+export const { logout } = authSlice.actions;
 
 export default authSlice.reducer;

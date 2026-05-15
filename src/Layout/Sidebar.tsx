@@ -54,7 +54,7 @@ export function Sidebar({ currentSection }: SidebarProps) {
           {/* Logo/Header */}
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-blue-600">
-              Jaggnath Motors
+              Jagganath Motors
             </h2>
             <p className="text-sm text-gray-500 mt-1">Management System</p>
           </div>
