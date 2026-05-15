@@ -9,12 +9,16 @@ import  axiosinstance  from "../../AxiosInstance/Authaxios";
 interface AuthState {
   isLoggedIn: boolean;
   role: string;
+  loading: boolean;
+  error: string | null;
   // data?: any; // optional if you use later
 }
 
 const initialState: AuthState = {
   isLoggedIn: localStorage.getItem("isLoggedIn") === "true",
   role: localStorage.getItem("role") || "",
+  loading: false,
+  error: null,
   // data: localStorage.getItem("data")
   //   ? JSON.parse(localStorage.getItem("data")!)
   //   : {},
@@ -35,8 +39,14 @@ const authSlice = createSlice({
     initialState,
     reducers:{},
     extraReducers: (builder) => {
+        builder.addCase(login.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+        });
         builder.addCase(login.fulfilled, (state, action) => {
           console.log("Login successful, response data:", action);
+            state.loading = false;
+            state.error = null;
             state.isLoggedIn = true;
             state.role = action.payload?.data?.role;
             // state.data = action.payload; // Store the entire response data if needed
@@ -46,9 +56,11 @@ const authSlice = createSlice({
             localStorage.setItem("role", action.payload?.data?.role );
             // localStorage.setItem("data", JSON.stringify(action.payload));
         });
-        builder.addCase(login.rejected, (state) => {
+        builder.addCase(login.rejected, (state, action) => {
+            state.loading = false;
             state.isLoggedIn = false;
             state.role = "";
+            state.error = action.error.message || "Login failed";
             // state.data = {};
 
             // Clear localStorage on failed login
