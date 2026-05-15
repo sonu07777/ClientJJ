@@ -10,6 +10,7 @@ interface AuthState {
   isLoggedIn: boolean;
   role: string;
   loading: boolean;
+  logoutLoading: boolean;
   error: string | null;
   // data?: any; // optional if you use later
 }
@@ -18,6 +19,7 @@ const initialState: AuthState = {
   isLoggedIn: localStorage.getItem("isLoggedIn") === "true",
   role: localStorage.getItem("role") || "",
   loading: false,
+  logoutLoading: false,
   error: null,
   // data: localStorage.getItem("data")
   //   ? JSON.parse(localStorage.getItem("data")!)
@@ -46,6 +48,7 @@ const authSlice = createSlice({
         state.isLoggedIn = false;
         state.role = "";
         state.loading = false;
+        state.logoutLoading = false;
         state.error = null;
         localStorage.removeItem("isLoggedIn");
         localStorage.removeItem("role");
@@ -73,6 +76,7 @@ const authSlice = createSlice({
             state.loading = false;
             state.isLoggedIn = false;
             state.role = "";
+            state.logoutLoading = false;
             state.error = action.error.message || "Login failed";
             // state.data = {};
 
@@ -81,10 +85,15 @@ const authSlice = createSlice({
             localStorage.removeItem("role");
             // localStorage.removeItem("data");
         });
+        builder.addCase(logoutUser.pending, (state) => {
+            state.logoutLoading = true;
+            state.error = null;
+        });
         builder.addCase(logoutUser.fulfilled, (state) => {
             state.isLoggedIn = false;
             state.role = "";
             state.loading = false;
+            state.logoutLoading = false;
             state.error = null;
             localStorage.removeItem("isLoggedIn");
             localStorage.removeItem("role");
@@ -93,6 +102,7 @@ const authSlice = createSlice({
             state.isLoggedIn = false;
             state.role = "";
             state.loading = false;
+            state.logoutLoading = false;
             state.error = null;
             localStorage.removeItem("isLoggedIn");
             localStorage.removeItem("role");

@@ -5,11 +5,12 @@ import {
   MenuOutlined,
   CloseOutlined,
   LogoutOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "../Redux/Store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../Redux/Store";
 import { logoutUser } from "../Redux/Slice/AuthSlice";
 
 interface SidebarProps {
@@ -26,6 +27,8 @@ export function SideBarMainLayout({
   const location = useLocation();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { logoutLoading } = useSelector((state: RootState) => state.Auth);
+  const logoutInFlightRef = useRef(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const menuItems = [
@@ -38,9 +41,13 @@ export function SideBarMainLayout({
     setIsMobileOpen(false);
   };
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
+  const handleLogout = async () => {
+    if (logoutLoading || logoutInFlightRef.current) return;
+
+    logoutInFlightRef.current = true;
     setIsMobileOpen(false);
+    await dispatch(logoutUser());
+    logoutInFlightRef.current = false;
     navigate("/", { replace: true });
   };
 
@@ -115,10 +122,12 @@ export function SideBarMainLayout({
               <div className="p-4 border-t border-gray-200">
                 <button
                   onClick={handleLogout}
-                  className="mb-4 w-full flex items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2 font-medium text-red-600 transition-colors hover:bg-red-50"
+                  disabled={logoutLoading}
+                  aria-busy={logoutLoading}
+                  className="mb-4 w-full flex items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2 font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  <LogoutOutlined />
-                  <span>Logout</span>
+                  {logoutLoading ? <LoadingOutlined /> : <LogoutOutlined />}
+                  <span>{logoutLoading ? "Logging out..." : "Logout"}</span>
                 </button>
                 <p className="text-xs text-gray-500 text-center">
                   © 2026 Management Dashboard
